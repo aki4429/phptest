@@ -12,7 +12,6 @@
   array_splice($colors, 2, 0, "grey"); // "red"の前に"white"を挿入
 
 // 練習4
-  unset(array_search("green", $colors)[0]); // "green"を削除
   $index = array_search("green", $colors);
   if ($index !== false) {
       unset($colors[$index]); // "green"を削除
