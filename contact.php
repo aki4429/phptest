@@ -4,12 +4,12 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 // ライブラリ読み込み（ファイルと同じ階層に PHPMailer を置いてください）
-require 'PHPMailer/src/Exception.php';
-require 'PHPMailer/src/PHPMailer.php';
-require 'PHPMailer/src/SMTP.php';
+require 'PHPMailer/PHPMailer/src/Exception.php';
+require 'vender/PHPMailer/PHPMailer/src/PHPMailer.php';
+require 'vender/PHPMailer/PHPMailer/src/SMTP.php';
 
 // フォームから送られたデータを取得
-$name = $_POST['name'] ?? '';
+$name = $_POST['username'] ?? '';
 $email = $_POST['email'] ?? '';
 $message = $_POST['message'] ?? '';
 $to_admin = 'admin@example.com'; // 管理者のメールアドレス
