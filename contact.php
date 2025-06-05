@@ -1,18 +1,31 @@
 <?php
-// PHPMailer を読み込む（composerなし、直接読み込み形式）
+// PHPMailer を読み込む（composer読み込み形式）
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// ライブラリ読み込み（ファイルと同じ階層に PHPMailer を置いてください）
-require 'PHPMailer/PHPMailer/src/Exception.php';
-require 'vender/PHPMailer/PHPMailer/src/PHPMailer.php';
-require 'vender/PHPMailer/PHPMailer/src/SMTP.php';
+// ライブラリ読み込み（composerではautoloadで必要ファイル自動読み込み）
+require 'vendor/autoload.php';
+
+//dotenv読み込み
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// 変数を使う
+$mailHost = $_ENV['MAIL_HOST'];
+$mailPort = $_ENV['MAIL_PORT'];
+$mailUser = $_ENV['MAIL_USERNAME'];
+$mailPass = $_ENV['MAIL_PASSWORD'];
+$mailSecure = $_ENV['MAIL_ENCRYPTION'];
+$mailFaddress = $_ENV['MAIL_FROM_ADDRESS'];
+$mailFname = $_ENV['MAIL_FROM_NAME'];
+$to_admin = 'akiyoshi.oda@gmail.com'; // 管理者のメールアドレス
+
 
 // フォームから送られたデータを取得
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
 $name = $_POST['username'] ?? '';
 $email = $_POST['email'] ?? '';
 $message = $_POST['message'] ?? '';
-$to_admin = 'admin@example.com'; // 管理者のメールアドレス
 
 // バリデーション
 if (empty($name) || empty($email) || empty($message)) {
@@ -24,17 +37,17 @@ if (empty($name) || empty($email) || empty($message)) {
 $userMail = new PHPMailer(true);
 try {
     $userMail->isSMTP();
-    $userMail->Host       = 'smtp.xserver.jp'; // XサーバーのSMTP
+    $userMail->Host       = $mailHost; // XサーバーのSMTP
     $userMail->SMTPAuth   = true;
-    $userMail->Username   = 'your_account@example.com'; // あなたのXサーバーメール
-    $userMail->Password   = 'your_password';
-    $userMail->SMTPSecure = 'tls';
-    $userMail->Port       = 587;
+    $userMail->Username   = $mailUser; // あなたのXサーバーメール
+    $userMail->Password   = $mailPass;
+    $userMail->SMTPSecure = $mailSecure;
+    $userMail->Port       = $mailPort;
     $userMail->CharSet    = 'UTF-8';
 
-    $userMail->setFrom('your_account@example.com', 'おだちんWEB');
+    $userMail->setFrom($mailFaddress, $mailFname);
     $userMail->addAddress($email, $name);
-    $userMail->Subject = '【おだちんWEB】お問い合わせありがとうございます';
+    $userMail->Subject = '【おだちんTEST】お問い合わせありがとうございます';
     $userMail->Body    = <<<EOT
 {$name}様
 
@@ -47,7 +60,7 @@ try {
 {$message}
 
 ＝＝＝＝＝＝＝＝＝＝
-おだちんWEB
+おだちんTEST
 EOT;
 
     $userMail->send();
@@ -60,16 +73,17 @@ EOT;
 $adminMail = new PHPMailer(true);
 try {
     $adminMail->isSMTP();
-    $adminMail->Host       = 'smtp.xserver.jp';
+    $adminMail->Host       = $mailHost; // XサーバーのSMTP
     $adminMail->SMTPAuth   = true;
-    $adminMail->Username   = 'your_account@example.com';
-    $adminMail->Password   = 'your_password';
-    $adminMail->SMTPSecure = 'tls';
-    $adminMail->Port       = 587;
+    $adminMail->Username   = $mailUser;// あなたのXサーバーメール
+    $adminMail->Password   = $mailPass;
+    $adminMail->SMTPSecure = $mailSecure;
+    $adminMail->Port       = $mailPort;
     $adminMail->CharSet    = 'UTF-8';
 
-    $adminMail->setFrom('your_account@example.com', 'WEBサイト');
+    $adminMail->setFrom($mailFaddress, $mailFname);
     $adminMail->addAddress($to_admin);
+    // $adminMail->addAddress('akiyoshi.oda@gmail.com', 'おだちんさん');  // 管理者宛
     $adminMail->Subject = '【WEBサイト】新しいお問い合わせがあります';
     $adminMail->Body    = <<<EOT
 新しいお問い合わせがありました。
@@ -85,4 +99,27 @@ EOT;
 } catch (Exception $e) {
     echo "管理者宛メールの送信に失敗しました: {$adminMail->ErrorInfo}";
 }
+}
 ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>情報入力フォーム</title>
+</head>
+
+<body>
+  <h1>情報を入力してください</h1>
+  <!-- <form action="." method="post"> -->
+  <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
+
+    名前: <input type="text" name="username" /><br /><br />
+    電話番号: <input type="text" name="phone" /><br /><br />
+    メールアドレス: <input type="text" name="email" /><br /><br />
+    メッセージ: <textarea name="message"></textarea><br /><br />
+    <input type="submit" value="送信" />
+  </form>
+</body>
+
+</html>
