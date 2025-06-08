@@ -23,15 +23,40 @@ $to_admin = 'akiyoshi.oda@gmail.com'; // 管理者のメールアドレス
 
 // フォームから送られたデータを取得
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-$name = $_POST['username'] ?? '';
-$email = $_POST['email'] ?? '';
-$message = $_POST['message'] ?? '';
+// 入力値の取得とトリム
+$name = trim($_POST['username'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$phone = trim($_POST['phone'] ?? '');
+$message = trim($_POST['message'] ?? '');
 
-// バリデーション
-if (empty($name) || empty($email) || empty($message)) {
-    echo "すべての項目を入力してください。";
+// エラーメッセージ初期化
+$errors = [];
+
+// バリデーションチェック
+if ($name === '') {
+    $errors[] = '名前を入力してください。';
+}
+if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errors[] = '正しいメールアドレスを入力してください。';
+}
+if ($phone === '' || !preg_match('/^\d{2,4}-\d{2,4}-\d{3,4}$/', $phone)) {
+    $errors[] = '電話番号は正しい形式（例: 090-1234-5678）で入力してください。';
+}
+if ($message === '') {
+    $errors[] = 'メッセージを入力してください。';
+}
+
+// エラーがあれば表示して終了
+if (!empty($errors)) {
+    echo "<h3>入力内容に不備があります。</h3>";
+    echo "<ul>";
+    foreach ($errors as $error) {
+        echo "<li>" . htmlspecialchars($error, ENT_QUOTES, 'UTF-8') . "</li>";
+    }
+    echo "</ul>";
     exit;
 }
+
 
 // ユーザーへの確認メール
 $userMail = new PHPMailer(true);
